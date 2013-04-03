@@ -25,7 +25,7 @@ IMAGE_DIRECTORY = "user_images/"
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.config.from_object("/var/www/settings.py", silent=True)
+app.config.from_object("/var/www/settings.py")
 
 def connect_db():
     return MySQLdb.connect(
