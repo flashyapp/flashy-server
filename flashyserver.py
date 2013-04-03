@@ -19,9 +19,14 @@ def connect_db():
         db=app.config['DATABASE'])
 
 def init_db():
+    from pprint import pprint
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql') as f:
-            db.cursor().execute(f.read())
+            cur = db.cursor()
+            str = f.read()
+            print str
+            cur.execute(str)
+            cur.close()
         db.commit()
 
 @app.before_request
