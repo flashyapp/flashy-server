@@ -59,7 +59,7 @@ def show_info():
     return '''
     <!doctype html>
     <title> Dev Info </title>
-    SETTINGS Path: {0}'''.format(os.environ['FLASHY_SETTINGS'])
+    At this point this is left empty, don't worry about this page'''
   
 def allowed_file(filename):
     return '.' in filename and \
@@ -83,8 +83,7 @@ def add_image():
 	else:
 	    fid += 1                # increment the max id number
 	filename = create_filename(fid, file.filename)
-	file.save(app.config['APP_ROOT'] +
-		  app.config['IMAGE_DIRECTORY']
+	file.save(app.config['IMAGE_DIRECTORY']
 		  + filename)
 	cur.execute("INSERT INTO photos VALUES(NULL, '{0}')".format(filename))
 	cur.close()
