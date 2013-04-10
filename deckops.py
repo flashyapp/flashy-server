@@ -8,9 +8,7 @@ from PIL import Image
 from imageSplit import splitImage
 from userops import verify_session, get_uId, get_username
 
-deckops = Blueprint('deckops', __name__)
-
-DECK_IMAGE_DIR = "deck_images"
+deckops = Blueprint('deckops', __name__, static_folder='deck_images')
 
 def create_new_card(dId, sideA, sideB):
     m = md5.new()
@@ -47,7 +45,7 @@ def new_from_image():
     dId = g.cur.lastrowid
 
     # Create a directory to hold the deck images
-    dirname = DECK_IMAGE_DIR + str(dId)
+    dirname = os.path.join(os.path.dirname(__file__),"deck_images", str(dId))
     os.mkdir(dirname)
 
     g.db.commit()
@@ -60,13 +58,14 @@ def new_from_image():
     for i, img in enumerate(imgs):
         filename = str(i) + ".jpg"
         filelist.append(filename)
-        img.convert('RGB').save(os.path.join(dirname,filename))
+        img.convert('RGB').save(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(dId),filename))
         
     asides = filelist[:len(filelist)/2]
     bsides = filelist[len(filelist)/2:]
     for icard in zip(asides, bsides):
-        sideA = '<img src="' + DECK_IMAGE_DIR + "/" + str(dId) + "/" + icard[0] + '" />'
-        sideB = '<img src="' + DECK_IMAGE_DIR + "/" + str(dId) + "/" + icard[1] + '" />'
+        sideA = '<img src="deck_images/' + str(dId) + "/" +  icard[0] + '"/ >'
+        sideB = '<img src="deck_images/' + str(dId) + "/" +  icard[1] + '"/ >'
         create_new_card(dId, sideA, sideB)
         
     del i
