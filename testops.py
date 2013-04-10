@@ -35,12 +35,12 @@ def add_image():
             fid = 1
         else:
             fid += 1                # increment the max id number
-            filename = create_filename(fid, file.filename)
-            file.save(IMAGE_DIRECTORY
-                      + filename)
-            cur.execute("INSERT INTO photos VALUES(NULL, '{0}')".format(filename))
-            cur.close()
-        return jsonify(filename = filename)
+        filename = create_filename(fid, file.filename)
+        file.save(IMAGE_DIRECTORY + filename)
+        cur.execute("INSERT INTO photos VALUES(NULL, '{0}')".format(filename))
+        cur.close()
+        return jsonify({'filename': filename})
+
 @testops.route('/get_images', methods=['GET'])
 def get_images():
     cur = g.db.cursor()
