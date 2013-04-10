@@ -19,12 +19,23 @@ APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIRECTORY = "user_images/"
 
 
-
-
 # create the application
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_object('settings')
+
+
+# Blueprint imports
+from testops import testops
+from pageops import pageops
+from userops import userops
+from deckops import deckops
+
+# Blueprints for the various parts of the application
+app.register_blueprint(testops)
+app.register_blueprint(pageops, url_prefix='/page')
+app.register_blueprint(userops, url_prefix='/user')
+app.register_blueprint(deckops, url_prefix='/deck')
 
 def connect_db():
     return MySQLdb.connect(
@@ -37,65 +48,24 @@ def init_db():
     with closing(connect_db()) as db:
 	with app.open_resource('schema.sql') as f:
 	    cur = db.cursor()
-	    str = f.read()
-	    print str
-	    cur.execute(str)
-	    cur.close()
-	db.commit()
-
+            cur.connection.autocommit(True)
+            for query in f.read().split(';'):
+                print query
+                cur.execute(query)
+                db.commit()
+                
 @app.before_request
 def before_request():
-    print "before_request"
     g.db = connect_db()
+    g.cur = g.db.cursor()
 
 @app.teardown_request
 def teardown_request(exception):
-    print "teardown_request"
-    g.db.commit()
+    g.db.commit()               # this is bad but preventative
     g.db.close()
 
-@app.route('/')
-def show_info():
-    return '''
-    <!doctype html>
-    <title> Dev Info </title>
-    At this point this is left empty, don't worry about this page'''
-  
-def allowed_file(filename):
-    return '.' in filename and \
-	  filename.rsplit('.', 1)[1] in app.config['ALLOWED_IMAGE_EXTENSIONS']
 
-def create_filename(fid, filename):
-    ext = filename.rsplit('.', 1)[1]
-    fn = str(fid) + "." + ext
-    return fn
 
-@app.route('/add_image', methods=['POST'])
-def add_image():
-    file = request.files['file']
-    if file and allowed_file(file.filename):
-	# get the maximum id number for the table
-	cur = g.db.cursor()
-	cur.execute('SELECT MAX(id) AS max_id FROM photos')
-	fid = cur.fetchall()[0][0]
-	if fid == None:
-	    fid = 1
-	else:
-	    fid += 1                # increment the max id number
-	filename = create_filename(fid, file.filename)
-	file.save(app.config['IMAGE_DIRECTORY']
-		  + filename)
-	cur.execute("INSERT INTO photos VALUES(NULL, '{0}')".format(filename))
-	cur.close()
-	return jsonify(filename = filename)
-
-@app.route('/get_images', methods=['GET'])
-def get_images():
-    cur = g.db.cursor()
-    cur.execute('SELECT * FROM photos')
-    result = cur.fetchall()
-    cur.close()
-    return jsonify(result)
 
 if __name__ == "__main__":
     app.run()
