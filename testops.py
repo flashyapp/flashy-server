@@ -1,8 +1,10 @@
 import MySQLdb
 import os
-
+import random
+from PIL import Image, ImageDraw
 from flask import Blueprint, request, session, g, redirect, url_for, abort, render_template, flash, jsonify
 
+from imageSplit import divLines
 ALLOWED_IMAGE_EXTENSIONS = set(['jpeg', 'jpg', 'gif', 'png', 'bmp'])
 IMAGE_DIRECTORY = "/var/www/user_images/"
 testops = Blueprint('testops', __name__)
@@ -22,7 +24,23 @@ def create_filename(fid, filename):
     ext = filename.rsplit('.', 1)[1]
     fn = str(fid) + "." + ext
     return fn
-
+@testops.route('/test_split', methods=['POST'])
+def test_split():
+    f = request.files['file']
+    if f and allowed_file(f.filename):
+        filename = create_filename(str(random.randint(0,1000)), f.filename)
+        f.save(IMAGE_DIRECTORY + filename)
+        print filename
+        im = Image.open(IMAGE_DIRECTORY + filename)
+        vlines, hlines = divLines(im)
+        draw = ImageDraw.Draw(im)
+        for line in vlines:
+            draw.line((line, 0, line, im.size[1]), fill=128)
+        for line in hlines:
+            draw.line((0, line, im.size[0], line), fill=128)
+        del draw
+        im.save(IMAGE_DIRECTORY + filename)
+        return filename
 @testops.route('/add_image', methods=['POST'])
 def add_image():
     file = request.files['file']
