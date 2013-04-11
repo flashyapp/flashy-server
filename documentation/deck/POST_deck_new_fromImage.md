@@ -27,7 +27,9 @@ A json object with the resulting Deck same as get_deck
 ***
 
 ## Errors
+
    HTTP 400 - Session was invalid or the provided filename was invalid
+   
 ***
 
 ## Example
