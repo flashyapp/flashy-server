@@ -42,8 +42,10 @@ CREATE TABLE decks (
 
 DROP TABLE IF EXISTS cards;
 CREATE TABLE cards (
+       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
        deck INT NOT NULL,
        sidea TEXT,
        sideb TEXT,
+       card_id INT,
        hash VARCHAR(32) NOT NULL
 );
