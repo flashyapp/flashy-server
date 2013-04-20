@@ -35,7 +35,7 @@ def new_from_cards():
     
     # authenticate the user
     uId = get_uId(username)
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
 
     # create the deck in the database
@@ -55,7 +55,7 @@ def new_upload_image():
     sId = requst.form['session_id']
     
     # check session before upload
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
 
     fil = request.files['file']
@@ -91,7 +91,7 @@ def new_from_image():
     
     uId = get_uId(username)
     
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
     if not filename or not os.path.exists(filename):
@@ -143,7 +143,7 @@ def deck_modify(deck_id):
     sId      = data['session_id']
 
     # authenticate the user
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
     
     # check that the deck exists
@@ -160,7 +160,7 @@ def get_deck(deck_id):
     username = request.json['username']
     sId = request.json['session_id']
     
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
 
     dId = deck.get_id(deck_id)
@@ -175,7 +175,7 @@ def delete_deck(deck_id):
     username = request.json['username']
     sid = request.json['session_id']
     
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})    
 
    # check that the deck exists
@@ -192,6 +192,28 @@ def delete_deck(deck_id):
         # TODO: check that error message lines up
         return jsonify({'error' : 300})
 
+@deckops.route('/deck/get_decks')
+def deck_get_decks():
+    username = request.json['username']
+    session_id = request.json['session_id']
+    
+    # verify session
+    if not user.verify(username, sId):
+        logging.debug("Invalid username or session")
+        return jsonify({'error' : 101})
+        
+    uId = user.id_name(username)
+
+    decks = deck.get_decks_by_uId(uId)
+    ret = {'decks' : []}
+    for deck in decks:
+        ret['decks'].append({'name' : deck[0],
+                             'deck_id' : deck[1],
+                             'description' : deck[2]})
+
+    return jsonify(ret)
+        
+    
 @deckops.route('/deck/<deck_id>/card/create')
 def deck_create_card(deck_id):
     username = request.json['username']
@@ -200,7 +222,7 @@ def deck_create_card(deck_id):
     sideB = request.json['sideB']
     
     # verify session
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
 
     dId = deck.get_id(deck_id)
@@ -221,7 +243,7 @@ def deck_create_card(deck_id):
     sideB = request.json['sideB']
 
     # verify session
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
     # check that the deck exists
@@ -247,7 +269,7 @@ def deck_modify_card(deck_id):
     index = request.json['index']
 
     # verify session
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
     # check that the deck exists
@@ -272,7 +294,7 @@ def deck_delete_card(deck_id):
     index = request.json['index']
 
     # verify session
-    if not verify_session(username, sId):
+    if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
     # check that the deck exists
