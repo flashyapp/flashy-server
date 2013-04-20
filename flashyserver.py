@@ -25,10 +25,10 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_object('settings')
 
-print "Log File: {0}".format(LOG_FILE)
+print "Log File: {0}".format(app.config['LOG_FILE'])
 
 # Set the logger configuration
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+logging.basicConfig(filename = app.config['LOG_FILE'], format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 # Blueprint imports
 from testops import testops
