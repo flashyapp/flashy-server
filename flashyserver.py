@@ -6,9 +6,10 @@ import MySQLdb
 import os
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, jsonify
 
-
+import logging
 import os
-# configuration
+
+# configuration defaults
 DATABASE = 'Default'
 DEBUG = True
 SECRET_KEY = 'developer key'
@@ -17,13 +18,16 @@ PASSWORD = 'dbPassword'
 ALLOWED_IMAGE_EXTENSIONS = set(['jpeg', 'jpg', 'gif', 'png', 'bmp'])
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIRECTORY = "user_images/"
-
+LOG_FILE = "flashy_server.log"
 
 # create the application
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_object('settings')
 
+
+# Set the logger configuration
+logging.basicConfig(filename=LOG_FILE, format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 # Blueprint imports
 from testops import testops
@@ -33,7 +37,7 @@ from deckops import deckops
 
 # Blueprints for the various parts of the application
 app.register_blueprint(testops)
-app.register_blueprint(pageops, url_prefix='/page')
+# app.register_blueprint(pageops, url_prefix='/page') not used any longer
 app.register_blueprint(userops, url_prefix='/user')
 app.register_blueprint(deckops, url_prefix='/deck')
 
@@ -65,9 +69,8 @@ def teardown_request(exception):
     g.db.close()
 
 
-
-
 if __name__ == "__main__":
+    logging.debug('Starting test server')
     app.run()
 
 
