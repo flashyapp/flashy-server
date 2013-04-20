@@ -4,12 +4,9 @@ import md5
 
 from flask import Blueprint, request, session, g, redirect, url_for, abort, render_template, flash, jsonify
 from PIL import Image
-
-import deck
-import card
+from models import user, deck, card
 
 from imageSplit import divLines, splitImage
-from userops import verify_session, get_uId, get_username, id_generator
 
 from settings import ALLOWED_IMAGE_EXTENSIONS
 
@@ -90,6 +87,7 @@ def new_from_image():
     desc     = data['description']
     sId      = data['session_id']
 
+    filename = data['name']
     
     uId = get_uId(username)
     
@@ -291,8 +289,3 @@ def deck_delete_card(deck_id):
         print "I am confused... look for why this happened this is second message"
         return jsonify({'error' : 400}) # no idea why this would happen
 
-
-
-
-
-    
