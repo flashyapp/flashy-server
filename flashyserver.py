@@ -18,12 +18,14 @@ PASSWORD = 'dbPassword'
 ALLOWED_IMAGE_EXTENSIONS = set(['jpeg', 'jpg', 'gif', 'png', 'bmp'])
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIRECTORY = "user_images/"
+LOG_FILE="flashy_server.log"
 
 # create the application
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_object('settings')
 
+print "Log File: {0}".format(LOG_FILE)
 
 # Set the logger configuration
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
