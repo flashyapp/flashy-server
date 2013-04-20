@@ -5,86 +5,29 @@ import md5
 from flask import Blueprint, request, session, g, redirect, url_for, abort, render_template, flash, jsonify
 from PIL import Image
 
-from imageSplit import splitImage
-from userops import verify_session, get_uId, get_username
+import deck
+import card
+
+from imageSplit import divLines, splitImage
+from userops import verify_session, get_uId, get_username, id_generator
+
+from settings import ALLOWED_IMAGE_EXTENSIONS
 
 deckops = Blueprint('deckops', __name__, static_folder='deck_images')
 
-"""
-==============================
-Helper functions
-==============================
-"""
+####################
+## Helper functions
+####################
 
-def deck_exists(dId):
-    g.cur.execute("""
-    SELECT EXISTS(SELECT * FROM decks WHERE id=%s)
-    """, dId)
-    r, = g.cur.fetchone()
-    return True if r == 1 else False
-    
-def create_new_card(dId, sideA, sideB):
-    """Create a new card in the database
-    Creates a new card type in the 'cards' database
-    This function is assumed to be called within a request context so the global
-    variable `g` is available to it
-    """
-    m = md5.new()
-    m.update(sideA)
-    m.update(sideB)
-    g.cur.execute("""
-    INSERT INTO cards (deck, sidea, sideb, hash)
-    VALUES(%s, %s, %s, %s)""", (dId, sideA, sideB, m.digest()))
-    g.db.commit()
-    return g.cur.lastrowid
+def allowed_file(filename):
+    return '.' in filename and \
+	  filename.rsplit('.', 1)[1] in ALLOWED_IMAGE_EXTENSIONS
 
-def create_new_deck(deckname, uId, desc):
-    """Create a new deck in the database
-    Creates a new deck in the 'decks' database
-    This function is assumed to be called within a request context so the global
-    variable `g` is available to it
-    """
-    g.cur.execute("""
-    INSERT INTO decks (name, creator, description, hash)
-    VALUES(%s, %s, %s, %s)
-    """, (deckname, uId, desc, 0)) # hash to be updated later
-    g.db.commit()
-    return g.cur.lastrowid
+####################
+## Endpoints
+####################
 
-
-def get_deck_json(dId):
-    """Get a deck in json format
-    Retrieves the deck information and all associated cards and jsonifys them
-    format defined by [TODO: insert the link to the formatting of the json format for deck]
-    """
-    ret = {}
-    # get the deck information
-    g.cur.execute("""
-    SELECT name, creator, description FROM decks WHERE id=%s
-    """, dId)
-    name, creator, desc = g.cur.fetchone()
-    ret['name'] = name
-    ret['creator'] = get_username(creator)
-    ret['desc'] = desc
-    
-    g.cur.execute("""
-    SELECT sidea, sideb FROM cards WHERE deck=%s
-    """, int(dId))
-    ret['cards'] = [{'sideA': c[0], 'sideB': c[1]} for c in g.cur.fetchall()]
-
-    return jsonify(ret)
-
-
-"""
-==============================
-Implemented Endpoints
-==============================
-"""
-@deckops.route('/get_deck/<dId>')
-def get_deck(dId):
-    return get_deck_json(dId)
-
-@deckops.route('/new/from_cards/', methods=['POST'])
+@deckops.route('/new/from_lists', methods=['POST'])
 def new_from_cards():
     data = request.json
     username = data['username']
@@ -96,85 +39,260 @@ def new_from_cards():
     # authenticate the user
     uId = get_uId(username)
     if not verify_session(username, sId):
-        abort(400)
+        return jsonify({'error' : 101})
 
     # create the deck in the database
-    dId = create_new_deck(deckname, uId, desc)
+    dId, deck_id = create_new_deck(deckname, uId, desc)
 
     # create the cards
     for card in cards:
         create_new_card(dId, card['sideA'], card['sideB'])
 
-    return get_deck(dId)
+    ret = get_deck(deck_id)
+    ret['error'] = 0            # set error code
+    return ret
+
+@deckops.route('/new/upload_image', methods=['POST'])
+def new_upload_image():
+    username = request.form['username']
+    sId = requst.form['session_id']
     
+    # check session before upload
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+
+    fil = request.files['file']
+    if fil and allowed_file(fil.filename):
+        # create a temporary file
+        f = NamedTemporaryFile(delete=False)
+        name = f.name
+        f.write(fil.read())
+        f.close()
+        # get the dividing points for the page
+        i = Image.open(name)
+        divs = divLines(i)
+        del i
+        # return the dividing points and the name of the page in json form
+        return jsonify(
+            name = name,
+            vlines = divs[0],
+            hlines = divs[1],
+            error  = 0)
+    else:
+        return jsonify({'error' : 200}) # error 200, the image processing failed
+
+        
 @deckops.route('/new/from_image', methods=['POST'])
 def new_from_image():
-    # Use the user post params and already uploaded photo to generate a deck from the post params
     data = request.json
     username = data['username']
+    deckname = data['deck_name']
+    desc     = data['description']
+    sId      = data['session_id']
+
+    
     uId = get_uId(username)
     
-    sId = data['session_id']
     if not verify_session(username, sId):
-        abort(400)              # TODO: do this more gracefully
+        return jsonify({'error' : 101})
         
-    filename = data['name']
     if not filename or not os.path.exists(filename):
-        abort(400)              # TODO: be more graceful like dancer or ox
+        return jsonify({'error' : 201})
         
-    deckname = data['deck_name']
-    desc = data['desc']
     # create the new deck in the database
-    dId = create_new_deck(deckname, uId, desc)
+    dId, deck_id = deck.new(deckname, uId, desc)
 
     # Create a directory to hold the deck images
+    # TODO: clean this up to use settings appropriately
     dirname = os.path.join(os.path.dirname(__file__),"deck_images", str(dId))
     os.mkdir(dirname)
 
     # split the temp image
     i = Image.open(filename)
     imgs = splitImage(i, (data['vlines'], data['hlines']))
-
+    
     # save the images in the deck file
     filelist = []
     for i, img in enumerate(imgs):
         filename = str(i) + ".jpg"
         filelist.append(filename)
         img.convert('RGB').save(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(dId),filename))
-        
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),filename))
+    
     asides = filelist[:len(filelist)/2]
     bsides = filelist[len(filelist)/2:]
     for icard in zip(asides, bsides):
-        sideA = '<img src="deck_images/' + str(dId) + "/" +  icard[0] + '"/ >'
-        sideB = '<img src="deck_images/' + str(dId) + "/" +  icard[1] + '"/ >'
-        create_new_card(dId, sideA, sideB)
+        cId = card.new(dId, "", "")
+        sideA = '<img src="deck/{0}/card/{1}/resources/{2}" />'.format(deck_id, cId, icard[0])
+        sideB = '<img src="deck/{0}/card/{1}/resources/{2}" />'.format(deck_id, cId, icard[1])
+        card.add_resource(cId, icard[0],
+                          os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),icard[0])) # do this more gracefully
+        card.add_resource(cId, icard[1],
+                          os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),icard[1])) # do this more gracefully
+        card.update(cId, sideA, sideB)
         
-    del i
+
     os.unlink(data['name'])        # let the filesystem delete the temp file
-    return get_deck_json(dId)
+    return deck.get_json(dId)
 
 
-@deckops.route('/modify/<dId>/add_cards')
-def add_cards(dId):
+@deckops.route('/<deck_id>/modify')
+def deck_modify(deck_id):
     data = request.json
     username = data['username']
-    deckname = data['deck_name']
-    desc     = data['desc']
-    cards    = data['cards']
+    deckname = data['name']
+    desc     = data['description']
     sId      = data['session_id']
 
     # authenticate the user
     if not verify_session(username, sId):
-        abort(400)
-
+        return jsonify({'error' : 101})
+    
     # check that the deck exists
-    if not deck_exists(dId):
-        abort(400)              # really need to find a better failure method
+    if not deck.exists(deck_id):
+        return jsonify({'error' : 300})
 
-    for card in cards:
-        create_new_card(dId, card['sideA'], card['sideB'])
+    dId = deck.get_id(deck_id)
+    deck.modify(dId, deckname, dId)
+    return jsonify({'error': 0})
+
+    
+@deckops.route('/<deck_id>/get')
+def get_deck(deck_id):
+    username = request.json['username']
+    sId = request.json['session_id']
+    
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+
+    dId = deck.get_id(deck_id)
         
-    return get_deck_json(dId)
+    ret = deck.get_json(dId)
+    ret['error'] = 0            # append the error code
+    
+    return ret
+
+@deckops.route('/deck/<deck_id>/delete')
+def delete_deck(deck_id):
+    username = request.json['username']
+    sid = request.json['session_id']
+    
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})    
+
+   # check that the deck exists
+    if not deck.exists(deck_id):
+        return jsonify({'error' : 300})
+        
+    dId = deck.get_id(deck_id)
+
+    ret = deck.delete(dId)
+
+    if ret == 1:
+        return jsonify({'error' : 0})
+    else:
+        # TODO: check that error message lines up
+        return jsonify({'error' : 300})
+
+@deckops.route('/deck/<deck_id>/card/create')
+def deck_create_card(deck_id):
+    username = request.json['username']
+    sId = request.json['session_id']
+    sideA = request.json['sideA']
+    sideB = request.json['sideB']
+    
+    # verify session
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+
+    dId = deck.get_id(deck_id)
+
+    ret = card.new(dId, sideA, sideB)
+    
+    if ret == 1:
+        return jsonify({'error' : 0})
+    else:
+        print "I am confused... look for why this happened"
+        return jsonify({'error' : 400}) # no idea why this would happen
+
+@deckops.route('/deck/<deck_id>/card/create')
+def deck_create_card(deck_id):
+    username = request.json['username']
+    sId = request.json['session_id']
+    sideA = request.json['sideA']
+    sideB = request.json['sideB']
+
+    # verify session
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+        
+    # check that the deck exists
+    if not deck.exists(deck_id):
+        return jsonify({'error' : 300})
+
+    dId = deck.get_id(deck_id)
+
+    ret = card.new(dId, sideA, sideB)
+    
+    if ret == 1:
+        return jsonify({'error' : 0})
+    else:
+        print "I am confused... look for why this happened this is second message"
+        return jsonify({'error' : 400}) # no idea why this would happen
+
+@deckops.route('/deck/<deck_id>/card/modify')
+def deck_modify_card(deck_id):
+    username = request.json['username']
+    sId = request.json['session_id']
+    sideA = request.json['sideA']
+    sideB = request.json['sideB']
+    index = request.json['index']
+
+    # verify session
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+        
+    # check that the deck exists
+    if not deck.exists(deck_id):
+        return jsonify({'error' : 300})
+
+    dId = deck.get_id(deck_id)
+    cId = card.get_cId(dId, index)
+    ret = card.modify(cId, sideA, sideB)
+    
+    if ret == 1:
+        return jsonify({'error' : 0})
+    else:
+        print "I am confused... look for why this happened this is second message"
+        return jsonify({'error' : 400}) # no idea why this would happen
+
+
+@deckops.route('/deck/<deck_id>/card/delete')
+def deck_delete_card(deck_id):
+    username = request.json['username']
+    sId = request.json['session_id']
+    index = request.json['index']
+
+    # verify session
+    if not verify_session(username, sId):
+        return jsonify({'error' : 101})
+        
+    # check that the deck exists
+    if not deck.exists(deck_id):
+        return jsonify({'error' : 300})
+
+    dId = deck.get_id(deck_id)
+    cId = card.get_cId(dId, index)
+    ret = card.delete(cId)
+    
+    if ret == 1:
+        return jsonify({'error' : 0})
+    else:
+        print "I am confused... look for why this happened this is second message"
+        return jsonify({'error' : 400}) # no idea why this would happen
+
+
+
+
 
     
