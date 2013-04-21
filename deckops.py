@@ -108,8 +108,8 @@ def new_from_image():
     log_request(request)
     
     data = request.json
-    if data == None or \
-    if 'username' not in data \
+    if data == None \
+    or 'username' not in data \
     or 'deck_name' not in data \
     or 'description' not in data\
     or 'session_id' not in data:
