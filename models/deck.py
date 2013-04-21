@@ -49,7 +49,6 @@ def get_id(deck_id):
     dId, = g.cur.fetchone()
     return dId
 
-
 def get_json(dId):
     """Get a deck in json format
     Retrieves the deck information and all associated cards and jsonifys them
@@ -72,3 +71,10 @@ def get_json(dId):
 
     return jsonify(ret)
 
+def get_decks_by_uId(uId):
+    g.cur.execute("""
+    SELECT name, deck_id, description
+    FROM decks
+    WHERE creator=%s""", (uId))
+    ret = g.cur.fetchall()
+    return ret

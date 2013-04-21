@@ -1,5 +1,4 @@
 # User operations file
-MAX_SESSIONS=10
 
 from flask import g
 
@@ -102,17 +101,14 @@ def login(username, password):
 
     if bcrypt.hashpw(password, hashed) != hashed:
         return None;
-    
-    # Get the number of sessions the user already has
+
+    # Get existing session ids
     g.cur.execute("""
     SELECT id
     FROM sessions
     WHERE uId=%s""",
                   (uId))
     res = [x[0] for x in g.cur.fetchall()]
-
-    if len(res) >= MAX_SESSIONS:
-        return None;
 
     # Create a new session id
     sId = id_generator(size=64, existing=set(res))
@@ -190,5 +186,11 @@ def get_username(uId):
     res, = g.cur.fetchone()
 
     return res
-    
+
+def get_session_count(uId):
+    g.cur.execute("""
+    SELECT COUNT(*)
+    FROM sessions
+    WHERE id=%s""", (uId))
+    return g.cur.fetchone()[0]
         

@@ -10,6 +10,9 @@ from imageSplit import divLines, splitImage
 
 from settings import ALLOWED_IMAGE_EXTENSIONS
 
+from utils import log_request
+import logging
+
 deckops = Blueprint('deckops', __name__, static_folder='deck_images')
 
 ####################
@@ -26,10 +29,20 @@ def allowed_file(filename):
 
 @deckops.route('/new/from_lists', methods=['POST'])
 def new_from_cards():
+    log_request(request)
+
+    if 'username' not in data \
+    or 'deck_name' not in data \
+    or 'description' not in data\
+    or 'cards' not in data\
+    or 'session_id' not in data:
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     data = request.json
     username = data['username']
     deckname = data['deck_name']
-    desc     = data['desc']
+    desc     = data['description']
     cards    = data['cards']
     sId      = data['session_id']
     
@@ -51,14 +64,24 @@ def new_from_cards():
 
 @deckops.route('/new/upload_image', methods=['POST'])
 def new_upload_image():
+    log_request(request)
+    
+    if 'username' not in request.form \
+    or 'session_id' not in request.form \
+    or 'file' not in request.files:
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     username = request.form['username']
     sId = requst.form['session_id']
+    fil = request.files['file']
+
     
     # check session before upload
     if not user.verify(username, sId):
+        logging.debug("Invalid username or session id")
         return jsonify({'error' : 101})
 
-    fil = request.files['file']
     if fil and allowed_file(fil.filename):
         # create a temporary file
         f = NamedTemporaryFile(delete=False)
@@ -76,12 +99,23 @@ def new_upload_image():
             hlines = divs[1],
             error  = 0)
     else:
-        return jsonify({'error' : 200}) # error 200, the image processing failed
+        logging.debug("Image processing failed, invalid filetype?")
+        return jsonify({'error' : 200})
 
         
 @deckops.route('/new/from_image', methods=['POST'])
 def new_from_image():
+    log_request(request)
+    
     data = request.json
+    if data == None or \
+    if 'username' not in data \
+    or 'deck_name' not in data \
+    or 'description' not in data\
+    or 'session_id' not in data:
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     username = data['username']
     deckname = data['deck_name']
     desc     = data['description']
@@ -136,6 +170,7 @@ def new_from_image():
 
 @deckops.route('/<deck_id>/modify')
 def deck_modify(deck_id):
+    log_request(request)
     data = request.json
     username = data['username']
     deckname = data['name']
@@ -157,6 +192,7 @@ def deck_modify(deck_id):
     
 @deckops.route('/<deck_id>/get')
 def get_deck(deck_id):
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     
@@ -172,6 +208,7 @@ def get_deck(deck_id):
 
 @deckops.route('/deck/<deck_id>/delete')
 def delete_deck(deck_id):
+    log_request(request)
     username = request.json['username']
     sid = request.json['session_id']
     
@@ -194,6 +231,7 @@ def delete_deck(deck_id):
 
 @deckops.route('/deck/get_decks')
 def deck_get_decks():
+    log_request(request)
     username = request.json['username']
     session_id = request.json['session_id']
     
@@ -216,6 +254,7 @@ def deck_get_decks():
     
 @deckops.route('/deck/<deck_id>/card/create')
 def deck_create_card(deck_id):
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     sideA = request.json['sideA']
@@ -232,11 +271,11 @@ def deck_create_card(deck_id):
     if ret == 1:
         return jsonify({'error' : 0})
     else:
-        print "I am confused... look for why this happened"
         return jsonify({'error' : 400}) # no idea why this would happen
 
 @deckops.route('/deck/<deck_id>/card/create')
 def deck_create_card(deck_id):
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     sideA = request.json['sideA']
@@ -257,11 +296,11 @@ def deck_create_card(deck_id):
     if ret == 1:
         return jsonify({'error' : 0})
     else:
-        print "I am confused... look for why this happened this is second message"
         return jsonify({'error' : 400}) # no idea why this would happen
 
 @deckops.route('/deck/<deck_id>/card/modify')
 def deck_modify_card(deck_id):
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     sideA = request.json['sideA']
@@ -283,12 +322,12 @@ def deck_modify_card(deck_id):
     if ret == 1:
         return jsonify({'error' : 0})
     else:
-        print "I am confused... look for why this happened this is second message"
         return jsonify({'error' : 400}) # no idea why this would happen
 
 
 @deckops.route('/deck/<deck_id>/card/delete')
 def deck_delete_card(deck_id):
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     index = request.json['index']
@@ -308,6 +347,5 @@ def deck_delete_card(deck_id):
     if ret == 1:
         return jsonify({'error' : 0})
     else:
-        print "I am confused... look for why this happened this is second message"
         return jsonify({'error' : 400}) # no idea why this would happen
 

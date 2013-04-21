@@ -20,6 +20,7 @@ import logging
 from utils import log_request
 
 userops = Blueprint('userops', __name__)
+MAX_SESSIONS=10
 
 ####################
 ## Helper functions
@@ -198,7 +199,14 @@ def user_login():
     log_request(request)
     password = request.json['password']
     username = request.json['username']
-
+    uId = get_uId(username)
+    
+    ret = {'error' : 0}
+    
+    if user.get_session_count(uId) >= MAX_SESSIONS:
+        logging.debug("Too many sessions for {0}".format(username))
+        ret['error'] = 103
+    
     session_id = user.login(username, password)
     ret = {'error' : 0}
     if session_id == None:
