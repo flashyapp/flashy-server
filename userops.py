@@ -199,7 +199,7 @@ def user_login():
     log_request(request)
     password = request.json['password']
     username = request.json['username']
-    uId = get_uId(username)
+    uId = user.get_uId(username)
     
     ret = {'error' : 0}
     
