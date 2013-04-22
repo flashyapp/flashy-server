@@ -1,6 +1,16 @@
 import logging
 from flask import request
 
+def valid_params(data, params):
+    if data == None:
+        return False
+        
+    for param in params:
+        if param not in data:
+            return False
+
+    return True
+        
 def log_request(req):
     logging.debug("""
 --------------------------------------------------

@@ -23,6 +23,7 @@ def allowed_file(filename):
     return '.' in filename and \
 	  filename.rsplit('.', 1)[1] in ALLOWED_IMAGE_EXTENSIONS
 
+
 ####################
 ## Endpoints
 ####################
@@ -30,16 +31,12 @@ def allowed_file(filename):
 @deckops.route('/new/from_lists', methods=['POST'])
 def new_from_cards():
     log_request(request)
-
-    if 'username' not in data \
-    or 'deck_name' not in data \
-    or 'description' not in data\
-    or 'cards' not in data\
-    or 'session_id' not in data:
+    data = request.json
+    
+    if not vaid_params(['username, deck_name, description, cards, session_id'], data):
         logging.debug("Missing parameters")
         return jsonify({'error' : 500})
         
-    data = request.json
     username = data['username']
     deckname = data['deck_name']
     desc     = data['description']
@@ -65,10 +62,9 @@ def new_from_cards():
 @deckops.route('/new/upload_image', methods=['POST'])
 def new_upload_image():
     log_request(request)
-    
-    if 'username' not in request.form \
-    or 'session_id' not in request.form \
-    or 'file' not in request.files:
+
+    if not valid_params(['username', 'session_id'], request.form) or\
+       not valid_params(['file'], request.files):
         logging.debug("Missing parameters")
         return jsonify({'error' : 500})
         
@@ -106,13 +102,9 @@ def new_upload_image():
 @deckops.route('/new/from_image', methods=['POST'])
 def new_from_image():
     log_request(request)
-    
     data = request.json
-    if data == None \
-    or 'username' not in data \
-    or 'deck_name' not in data \
-    or 'description' not in data\
-    or 'session_id' not in data:
+
+    if not valid_params(['username', 'deck_name', 'description', 'session_id', 'name'], data):
         logging.debug("Missing parameters")
         return jsonify({'error' : 500})
         
@@ -171,7 +163,12 @@ def new_from_image():
 @deckops.route('/<deck_id>/modify')
 def deck_modify(deck_id):
     log_request(request)
+    
     data = request.json
+    if not valid_params(['username', 'name', 'description', 'session_id'], data):
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     username = data['username']
     deckname = data['name']
     desc     = data['description']
@@ -193,8 +190,14 @@ def deck_modify(deck_id):
 @deckops.route('/<deck_id>/get')
 def get_deck(deck_id):
     log_request(request)
-    username = request.json['username']
-    sId = request.json['session_id']
+
+    data = request.json
+    if not valid_params(['username', 'session_id'], data):
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
+    username = data['username']
+    sId = data['session_id']
     
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
@@ -209,14 +212,22 @@ def get_deck(deck_id):
 @deckops.route('/deck/<deck_id>/delete')
 def delete_deck(deck_id):
     log_request(request)
+    
+    data = request.json
+    if not valid_params(['username', 'session_id'], data):
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     username = request.json['username']
     sid = request.json['session_id']
     
     if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
         return jsonify({'error' : 101})    
 
    # check that the deck exists
     if not deck.exists(deck_id):
+        logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
         
     dId = deck.get_id(deck_id)
@@ -224,14 +235,22 @@ def delete_deck(deck_id):
     ret = deck.delete(dId)
 
     if ret == 1:
+        logging.debug("Deleted deck successfully")
         return jsonify({'error' : 0})
     else:
-        # TODO: check that error message lines up
+        logging.debug("Failed to delete deck")
         return jsonify({'error' : 300})
 
 @deckops.route('/deck/get_decks')
 def deck_get_decks():
     log_request(request)
+
+    data = request.json
+    
+    if not valid_params(['username', 'session_id'], data):
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
     username = request.json['username']
     session_id = request.json['session_id']
     

@@ -1,6 +1,8 @@
 ## Card Operations
 ####################
 
+from utils import id_generator
+
 def new(dId, sideA, sideB):
     """Create a new card in the database
     Creates a new card type in the 'cards' database
@@ -41,16 +43,25 @@ def delete(cId):
     return g.cur.rowcount
     
 def add_resource(cId, name, path):
-    # TODO: get the resource's hash
+    # get the list of existing resources
+    g.cur.execute("""
+    SELECT resource_id
+    FROM resources
+    """)
+    existing = [x[0] for x in g.cur.fetchall()]
+
+    resource_id = id_generator(size=8, existing=existing)
+    
     hashval = 0
     g.cur.execute("""
-    INSERT INTO card_resouces(cId, name, path, hash)
+    INSERT INTO card_resouces(cId, resource_id, name, path, hash)
     VALUES(%s, %s, %s, %s)
-    """, (cId, name, path, hashval))
+    """, (cId, resouce_id, name, path, hashval))
     g.db.commit()
+    
     return g.cur.lastrowid
 
-def get_resource(cId, name):
+def get_resource(resource_id):
     cur.execute("""
     SELECT id, name, path, hash
     FROM card_resouces
@@ -65,4 +76,5 @@ def get_resources(cId):
     WHERE cID=%s""", (cId))
     vals = cur.fetchall()
     return vals
+
     
