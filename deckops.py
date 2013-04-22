@@ -241,7 +241,7 @@ def delete_deck(deck_id):
         logging.debug("Failed to delete deck")
         return jsonify({'error' : 300})
 
-@deckops.route('/deck/get_decks')
+@deckops.route('/deck/get_decks', methods=['POST'])
 def deck_get_decks():
     log_request(request)
 
