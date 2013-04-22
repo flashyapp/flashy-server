@@ -34,7 +34,8 @@ CREATE TABLE sessions (
 DROP TABLE IF EXISTS decks;
 CREATE TABLE decks (
        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-       name VARCHAR(100) NOT NULL,
+       name VARCHAR(256) NOT NULL,
+       deck_id VARCHAR(16) UNIQUE,
        creator INT NOT NULL,
        description TEXT,
        hash VARCHAR(32) NOT NULL
@@ -47,5 +48,15 @@ CREATE TABLE cards (
        sidea TEXT,
        sideb TEXT,
        card_id INT,
+       hash VARCHAR(32) NOT NULL
+);
+
+DROP TABLE IF EXISTS card_resources;
+CREATE TABLE resources (
+       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+       cId INT NOT NULL,
+       resource_id VARCHAR(8) UNIQUE NOT NULL,
+       name TEXT,
+       path TEXT,
        hash VARCHAR(32) NOT NULL
 );

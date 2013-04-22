@@ -1,12 +1,13 @@
 import logging
 from flask import request
 
-def valid_params(data, params):
+def valid_params(params, data):
     if data == None:
         return False
         
     for param in params:
         if param not in data:
+            logging.debug("Param: {0} missing!".format(param))
             return False
 
     return True
