@@ -10,7 +10,8 @@ from imageSplit import divLines, splitImage
 
 from settings import ALLOWED_IMAGE_EXTENSIONS
 
-from utils import log_request
+from utils import log_request, valid_params
+
 import logging
 
 deckops = Blueprint('deckops', __name__, static_folder='deck_images')
@@ -33,7 +34,7 @@ def new_from_cards():
     log_request(request)
     data = request.json
     
-    if not vaid_params(['username, deck_name, description, cards, session_id'], data):
+    if not valid_params(['username', 'deck_name', 'description', 'cards', 'session_id'], data):
         logging.debug("Missing parameters")
         return jsonify({'error' : 500})
         
@@ -44,20 +45,20 @@ def new_from_cards():
     sId      = data['session_id']
     
     # authenticate the user
-    uId = get_uId(username)
+    uId = user.get_uId(username)
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
 
     # create the deck in the database
-    dId, deck_id = create_new_deck(deckname, uId, desc)
+    dId, deck_id = deck.new(deckname, uId, desc)
 
     # create the cards
-    for card in cards:
-        create_new_card(dId, card['sideA'], card['sideB'])
+    for c in cards:
+        card.new(dId, c['sideA'], c['sideB'])
 
-    ret = get_deck(deck_id)
+    ret = deck.get_deck(dId)
     ret['error'] = 0            # set error code
-    return ret
+    return jsonify(ret)
 
 @deckops.route('/new/upload_image', methods=['POST'])
 def new_upload_image():
@@ -160,7 +161,7 @@ def new_from_image():
     return deck.get_json(dId)
 
 
-@deckops.route('/<deck_id>/modify')
+@deckops.route('/<deck_id>/modify', methods=['POST'])
 def deck_modify(deck_id):
     log_request(request)
     
@@ -177,17 +178,19 @@ def deck_modify(deck_id):
     # authenticate the user
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
-    
-    # check that the deck exists
-    if not deck.exists(deck_id):
-        return jsonify({'error' : 300})
 
     dId = deck.get_id(deck_id)
+    
+    # check that the deck exists
+    if not deck.exists(dId):
+        return jsonify({'error' : 300})
+
+
     deck.modify(dId, deckname, dId)
     return jsonify({'error': 0})
 
     
-@deckops.route('/<deck_id>/get')
+@deckops.route('/<deck_id>/get', methods=['POST'])
 def get_deck(deck_id):
     log_request(request)
 
@@ -204,12 +207,13 @@ def get_deck(deck_id):
 
     dId = deck.get_id(deck_id)
         
-    ret = deck.get_json(dId)
+    ret = deck.get_deck(dId)
     ret['error'] = 0            # append the error code
     
-    return ret
+    return jsonify(ret)
 
-@deckops.route('/deck/<deck_id>/delete')
+@deckops.route('/<deck_id>/')
+@deckops.route('/<deck_id>/delete', methods=['POST'])
 def delete_deck(deck_id):
     log_request(request)
     
@@ -219,19 +223,19 @@ def delete_deck(deck_id):
         return jsonify({'error' : 500})
         
     username = request.json['username']
-    sid = request.json['session_id']
+    sId = request.json['session_id']
     
     if not user.verify(username, sId):
         logging.debug("Invalid username or session_id")
         return jsonify({'error' : 101})    
 
+    dId = deck.get_id(deck_id)
+    
    # check that the deck exists
-    if not deck.exists(deck_id):
+    if not deck.exists(dId):
         logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
         
-    dId = deck.get_id(deck_id)
-
     ret = deck.delete(dId)
 
     if ret == 1:
@@ -241,7 +245,7 @@ def delete_deck(deck_id):
         logging.debug("Failed to delete deck")
         return jsonify({'error' : 300})
 
-@deckops.route('/deck/get_decks', methods=['POST'])
+@deckops.route('/get_decks', methods=['POST'])
 def deck_get_decks():
     log_request(request)
 
@@ -255,7 +259,7 @@ def deck_get_decks():
     session_id = request.json['session_id']
     
     # verify session
-    if not user.verify(username, sId):
+    if not user.verify(username, session_id):
         logging.debug("Invalid username or session")
         return jsonify({'error' : 101})
         
@@ -263,15 +267,15 @@ def deck_get_decks():
 
     decks = deck.get_decks_by_uId(uId)
     ret = {'decks' : []}
-    for deck in decks:
-        ret['decks'].append({'name' : deck[0],
-                             'deck_id' : deck[1],
-                             'description' : deck[2]})
+    for d in decks:
+        ret['decks'].append({'name' : d[0],
+                             'deck_id' : d[1],
+                             'description' : d[2]})
 
     return jsonify(ret)
         
     
-@deckops.route('/deck/<deck_id>/card/create')
+@deckops.route('/<deck_id>/card/create', methods=['POST'])
 def deck_create_card(deck_id):
     log_request(request)
     username = request.json['username']
@@ -292,7 +296,7 @@ def deck_create_card(deck_id):
     else:
         return jsonify({'error' : 400}) # no idea why this would happen
 
-@deckops.route('/deck/<deck_id>/card/create')
+@deckops.route('/<deck_id>/card/create', methods=['POST'])
 def deck_create_card(deck_id):
     log_request(request)
     username = request.json['username']
@@ -304,20 +308,18 @@ def deck_create_card(deck_id):
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
-    # check that the deck exists
-    if not deck.exists(deck_id):
-        return jsonify({'error' : 300})
-
     dId = deck.get_id(deck_id)
+    
+    # check that the deck exists
+    if not deck.exists(dId):
+        return jsonify({'error' : 300})
 
     ret = card.new(dId, sideA, sideB)
     
-    if ret == 1:
-        return jsonify({'error' : 0})
-    else:
-        return jsonify({'error' : 400}) # no idea why this would happen
+    return jsonify({'error' : 0})
 
-@deckops.route('/deck/<deck_id>/card/modify')
+
+@deckops.route('/<deck_id>/card/modify', methods=['POST'])
 def deck_modify_card(deck_id):
     log_request(request)
     username = request.json['username']
@@ -328,13 +330,17 @@ def deck_modify_card(deck_id):
 
     # verify session
     if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
         return jsonify({'error' : 101})
         
+    dId = deck.get_id(deck_id)
+    
     # check that the deck exists
-    if not deck.exists(deck_id):
+    if not deck.exists(dId):
+        logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
 
-    dId = deck.get_id(deck_id)
+    
     cId = card.get_cId(dId, index)
     ret = card.modify(cId, sideA, sideB)
     
@@ -344,7 +350,7 @@ def deck_modify_card(deck_id):
         return jsonify({'error' : 400}) # no idea why this would happen
 
 
-@deckops.route('/deck/<deck_id>/card/delete')
+@deckops.route('/<deck_id>/card/delete')
 def deck_delete_card(deck_id):
     log_request(request)
     username = request.json['username']
@@ -353,10 +359,14 @@ def deck_delete_card(deck_id):
 
     # verify session
     if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
         return jsonify({'error' : 101})
-        
+
+    dId = deck.get_id(deck_id)
+    
     # check that the deck exists
-    if not deck.exists(deck_id):
+    if not deck.exists(dId):
+        logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
 
     dId = deck.get_id(deck_id)

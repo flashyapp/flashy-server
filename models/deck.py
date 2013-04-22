@@ -1,9 +1,15 @@
 # Deck operations file
 from flask import g
+from utils import id_generator
+
+import card, user
 
 def exists(dId):
     g.cur.execute("""
-    SELECT EXISTS(SELECT * FROM decks WHERE id=%s)
+    SELECT EXISTS(
+      SELECT *
+      FROM decks
+      WHERE id=%s)
     """, dId)
     r, = g.cur.fetchone()
     return True if r == 1 else False
@@ -25,6 +31,18 @@ def new(deckname, uId, desc):
     return (g.cur.lastrowid, deck_id)
 
 def delete(dId):
+    # get all the cards associated with the deck
+    g.cur.execute("""
+    SELECT id
+    FROM cards
+    WHERE deck=%s""",
+                  (dId))
+    ids = [x[0] for x in g.cur.fetchall()]
+    # delete all the cards associated with the deck
+    for cId in ids:
+        card.delete(cId)
+
+    # delete the deck
     g.cur.execute("""
     DELETE from decks
     WHERE id=%s
@@ -34,7 +52,7 @@ def delete(dId):
 
 def modify(dId, name, desc):
     g.cur.execute("""
-    UPDATE
+    UPDATE decks
     SET name=%s, description=%s
     WHERE id=%s
     """, (name, desc, dId))
@@ -46,10 +64,13 @@ def get_id(deck_id):
     SELECT id
     FROM decks
     WHERE deck_id=%s""", (deck_id))
-    dId, = g.cur.fetchone()
-    return dId
+    ret = g.cur.fetchone()
+    if ret == None:
+        return -1
+    else:
+        return ret[0]
 
-def get_json(dId):
+def get_deck(dId):
     """Get a deck in json format
     Retrieves the deck information and all associated cards and jsonifys them
     format defined by [TODO: insert the link to the formatting of the json format for deck]
@@ -57,19 +78,20 @@ def get_json(dId):
     ret = {}
     # get the deck information
     g.cur.execute("""
-    SELECT name, creator, description FROM decks WHERE id=%s
+    SELECT name, creator, description, deck_id FROM decks WHERE id=%s
     """, dId)
-    name, creator, desc = g.cur.fetchone()
+    name, creator, desc, deck_id = g.cur.fetchone()
     ret['name'] = name
-    ret['creator'] = get_username(creator)
-    ret['desc'] = desc
+    ret['creator'] = user.get_username(creator)
+    ret['description'] = desc
+    ret['deck_id'] = deck_id
     
     g.cur.execute("""
-    SELECT sidea, sideb FROM cards WHERE deck=%s
+    SELECT sidea, sideb, card_id FROM cards WHERE deck=%s
     """, int(dId))
-    ret['cards'] = [{'sideA': c[0], 'sideB': c[1]} for c in g.cur.fetchall()]
+    ret['cards'] = [{'index': c[2], 'sideA': c[0], 'sideB': c[1]} for c in g.cur.fetchall()]
 
-    return jsonify(ret)
+    return ret
 
 def get_decks_by_uId(uId):
     g.cur.execute("""

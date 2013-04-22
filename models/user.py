@@ -48,8 +48,11 @@ def id_name(username):
     FROM users
     WHERE username=%s""",
                   (username))
-    ret, g.cur.fetchone()
-    return ret
+    ret =  g.cur.fetchone()
+    if ret == None:
+        return -1
+    else:
+        return ret[0]
     
 def new(username, password, email):
     g.cur.execute("""
