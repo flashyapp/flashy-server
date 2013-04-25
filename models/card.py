@@ -38,7 +38,7 @@ def get_cId(dId, index):
     ret, = g.cur.fetchone()
     return ret
     
-def update(cId, sideA, sideB):
+def modify(cId, sideA, sideB):
     g.cur.execute("""
     UPDATE cards
     SET sideA=%s, sideB=%s

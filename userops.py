@@ -177,7 +177,7 @@ def modify():
         logging.error("user modification returned failure!")
         return jsonify({'error' : -1}) # impossibru!!
 
-@userops.route('/reset_password')
+@userops.route('/reset_password', methods=['POST'])
 def reset_password():
     log_request(request)
     

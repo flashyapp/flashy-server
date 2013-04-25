@@ -186,7 +186,7 @@ def deck_modify(deck_id):
         return jsonify({'error' : 300})
 
 
-    deck.modify(dId, deckname, dId)
+    deck.modify(dId, deckname, desc)
     return jsonify({'error': 0})
 
     
@@ -282,27 +282,6 @@ def deck_create_card(deck_id):
     sId = request.json['session_id']
     sideA = request.json['sideA']
     sideB = request.json['sideB']
-    
-    # verify session
-    if not user.verify(username, sId):
-        return jsonify({'error' : 101})
-
-    dId = deck.get_id(deck_id)
-
-    ret = card.new(dId, sideA, sideB)
-    
-    if ret == 1:
-        return jsonify({'error' : 0})
-    else:
-        return jsonify({'error' : 400}) # no idea why this would happen
-
-@deckops.route('/<deck_id>/card/create', methods=['POST'])
-def deck_create_card(deck_id):
-    log_request(request)
-    username = request.json['username']
-    sId = request.json['session_id']
-    sideA = request.json['sideA']
-    sideB = request.json['sideB']
 
     # verify session
     if not user.verify(username, sId):
@@ -350,7 +329,7 @@ def deck_modify_card(deck_id):
         return jsonify({'error' : 400}) # no idea why this would happen
 
 
-@deckops.route('/<deck_id>/card/delete')
+@deckops.route('/<deck_id>/card/delete', methods=['POST'])
 def deck_delete_card(deck_id):
     log_request(request)
     username = request.json['username']
