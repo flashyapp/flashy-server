@@ -33,7 +33,7 @@ def get_cId(dId, index):
     g.cur.execute("""
     SELECT id
     FROM cards
-    WHERE dId=%s, card_id=%s""",
+    WHERE dId=%s AND card_id=%s""",
                   (dId, index))
     ret, = g.cur.fetchone()
     return ret

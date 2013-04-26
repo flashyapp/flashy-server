@@ -194,6 +194,6 @@ def get_session_count(uId):
     g.cur.execute("""
     SELECT COUNT(*)
     FROM sessions
-    WHERE id=%s""", (uId))
+    WHERE uId=%s""", (uId))
     return g.cur.fetchone()[0]
         
