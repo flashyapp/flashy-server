@@ -1,0 +1,10 @@
+# ignore pyc
+*.pyc
+# ignore emacs temp files
+*~
+
+# ignore the settings file
+settings.py
+
+# ignore the testing code
+test/*

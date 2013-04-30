@@ -92,7 +92,34 @@ def get_deck(dId):
     ret['cards'] = [{'index': c[2], 'sideA': c[0], 'sideB': c[1]} for c in g.cur.fetchall()]
 
     return ret
+def get_owner(dId):
+    """Get the deck's owner
+    """
+    g.cur.execute("""
+    SELECT creator
+    FROM decks
+    WHERE id=%s""", (dId))
+    g.cur.fetchone()
 
+def is_owner(username, dId):
+    """Check if the user owns the deck
+    """
+    uId = user.get_uId(username)
+    if uId == -1:
+        return False
+    g.cur.execute("""
+    SELECT COUNT(*)
+    FROM decks
+    WHERE id=%s AND creator=%s""", (dId, uId))
+    ret = g.cur.fetchone()
+    
+    if ret == None:
+        return False
+    elif ret[0] == 1:
+        return True
+    else:
+        return False
+    
 def get_decks_by_uId(uId):
     g.cur.execute("""
     SELECT name, deck_id, description

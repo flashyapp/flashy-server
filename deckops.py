@@ -3,8 +3,13 @@ import os
 import md5
 
 from flask import Blueprint, request, session, g, redirect, url_for, abort, render_template, flash, jsonify
+
 from PIL import Image
-from models import user, deck, card
+
+import tempfile
+from cStringIO import StringIO
+
+from models import user, deck, card, resource
 
 from imageSplit import divLines, splitImage
 
@@ -136,27 +141,22 @@ def new_from_image():
     i = Image.open(filename)
     imgs = splitImage(i, (data['vlines'], data['hlines']))
     
-    # save the images in the deck file
-    filelist = []
-    for i, img in enumerate(imgs):
-        filename = str(i) + ".jpg"
-        filelist.append(filename)
-        img.convert('RGB').save(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),filename))
-    
-    asides = filelist[:len(filelist)/2]
-    bsides = filelist[len(filelist)/2:]
+    asides = imgs[:len(imgs)/2]
+    bsides = imgs[len(imgs)/2:]
     for icard in zip(asides, bsides):
         cId = card.new(dId, "", "")
-        sideA = '<img src="deck/{0}/card/{1}/resources/{2}" />'.format(deck_id, cId, icard[0])
-        sideB = '<img src="deck/{0}/card/{1}/resources/{2}" />'.format(deck_id, cId, icard[1])
-        card.add_resource(cId, icard[0],
-                          os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),icard[0])) # do this more gracefully
-        card.add_resource(cId, icard[1],
-                          os.path.join(os.path.dirname(os.path.abspath(__file__)),"deck_images",str(deck_id),icard[1])) # do this more gracefully
-        card.update(cId, sideA, sideB)
-        
-
+        # write the image to memory "files"
+        atmp = StringIO()
+        btmp = StringIO()
+        icard[0].save(atmp, format("JPEG"))
+        icard[1].save(btmp, format("JPEG"))
+        atmp.seek(0)
+        btmp.seek(0)
+        a_id = resource.new(atmp, cId)[1]
+        b_id = resource.new(atmp, cId)[1]
+        sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
+        sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
+        card.modify(cId, sideA, sideB)
     os.unlink(data['name'])        # let the filesystem delete the temp file
     return deck.get_json(dId)
 
@@ -348,6 +348,8 @@ def deck_delete_card(deck_id):
         logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
 
+    # check that the deck belongs to the user
+    uId = user.get
     dId = deck.get_id(deck_id)
     cId = card.get_cId(dId, index)
     ret = card.delete(cId)
@@ -357,3 +359,68 @@ def deck_delete_card(deck_id):
     else:
         return jsonify({'error' : 400}) # no idea why this would happen
 
+@deckops.route('/<deck_id>/card/get_resources', methods=['POST'])
+def deck_card_get_resources(deck_id):
+    log_request(request)
+    username = request.json['username']
+    sId = request.json['session_id']
+    index = request.json['index']
+
+    # verify session
+    if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
+        return jsonify({'error' : 101})
+
+    dId = deck.get_id(deck_id)
+    
+    # check that the deck exists
+    if not deck.exists(dId):
+        logging.debug("Deck does not exist")
+        return jsonify({'error' : 300})
+
+    cId = card.get_cId(dId, index)
+    
+    resources = card.get_resources(cId)
+    resources['error'] = 0
+    return resources
+
+@deckops.route('/<deck_id>/card/add_resource', methods=['POST'])
+def deck_card_add_resource(deck_id):
+    logrequest(request)
+    username = request.form['username']
+    sId = request.form['session_id']
+    index = request.form['index']
+    f = request.files['file']
+    
+    # verify session
+    if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
+        return jsonify({'error' : 101})
+
+    dId = deck.get_id(deck_id)
+
+    if not deck.exists(dId):
+        logging.debug("Deck does not exist")
+        return jsonify({'error' : 300})
+
+    cId = card.get_cId(dId, index)
+    resource.new(f, cId)
+
+@deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
+def deck_card_delete_resource(deck_id):
+    logrequest(request)
+    username = request.json['username']
+    sId = request.json['session_id']
+    resource_id = request.json['resource_id']
+
+    # verify session
+    if not user.verify(username, sId):
+        logging.debug("Invalid username or session_id")
+        return jsonify({'error' : 101})
+
+    # verify the user owns the deck
+    
+    resource.delete(resource_id)
+    return jsonify({'error' : 0})
+
+    
