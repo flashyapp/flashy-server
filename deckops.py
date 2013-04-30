@@ -97,8 +97,7 @@ def new_upload_image():
         # return the dividing points and the name of the page in json form
         return jsonify(
             name = name,
-            vlines = divs[0],
-            hlines = divs[1],
+            divs = divs
             error  = 0)
     else:
         logging.debug("Image processing failed, invalid filetype?")
