@@ -41,7 +41,8 @@ def __subImage(img, box):
     return img[box[0]:box[2], box[1]: box[3]]
 
     
-def divLines(img):
+def divLines(inImage):
+    img = np.array(inImage)
     ret = []
     vbands = []
     
@@ -68,8 +69,7 @@ def splitImage(img, divLines):
         
 if __name__ == "__main__":
     img = Image.open("test/test.gif")
-    i = np.array(img)
-    a = divLines(i)
+    a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
     # for c, out in enumerate(r):
