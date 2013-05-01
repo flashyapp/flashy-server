@@ -382,7 +382,7 @@ def deck_card_get_resources(deck_id):
 
 @deckops.route('/<deck_id>/card/add_resource', methods=['POST'])
 def deck_card_add_resource(deck_id):
-    logrequest(request)
+    log_request(request)
     username = request.form['username']
     sId = request.form['session_id']
     index = request.form['index']
@@ -405,7 +405,7 @@ def deck_card_add_resource(deck_id):
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
 def deck_card_delete_resource(deck_id):
-    logrequest(request)
+    log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
     resource_id = request.json['resource_id']
