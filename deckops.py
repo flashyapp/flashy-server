@@ -271,8 +271,8 @@ def deck_get_decks():
                              'deck_id' : d[1],
                              'description' : d[2]})
 
+    ret['error'] = 0
     return jsonify(ret)
-        
     
 @deckops.route('/<deck_id>/card/create', methods=['POST'])
 def deck_create_card(deck_id):
