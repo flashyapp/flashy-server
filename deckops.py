@@ -7,6 +7,7 @@ from flask import Blueprint, request, session, g, redirect, url_for, abort, rend
 from PIL import Image
 
 import tempfile
+
 from cStringIO import StringIO
 
 from models import user, deck, card, resource
@@ -86,7 +87,7 @@ def new_upload_image():
 
     if fil and allowed_file(fil.filename):
         # create a temporary file
-        f = NamedTemporaryFile(delete=False)
+        f = tempfile.NamedTemporaryFile(delete=False)
         name = f.name
         f.write(fil.read())
         f.close()
