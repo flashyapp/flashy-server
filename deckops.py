@@ -378,7 +378,8 @@ def deck_card_get_resources(deck_id):
     cId = card.get_cId(dId, index)
     
     resources = card.get_resources(cId)
-    return jsonify(resources = resources, error = 0)
+    res = [{'resource_id' : rId, 'name' : name, 'path' : path} for rId, name, path, hashval in resources]
+    return jsonify(resources = res, error = 0)
 
 @deckops.route('/<deck_id>/card/add_resource', methods=['POST'])
 def deck_card_add_resource(deck_id):

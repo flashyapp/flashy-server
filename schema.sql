@@ -51,7 +51,7 @@ CREATE TABLE cards (
        hash VARCHAR(32) NOT NULL
 );
 
-DROP TABLE IF EXISTS card_resources;
+DROP TABLE IF EXISTS resources;
 CREATE TABLE resources (
        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
        cId INT NOT NULL,

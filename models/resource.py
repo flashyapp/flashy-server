@@ -1,4 +1,4 @@
-from flask import g, app
+from flask import g, current_app
 from utils import id_generator
 import os
 
@@ -16,14 +16,14 @@ def new(f, cId):
     # get existing resource ids & generate the id
     g.cur.execute("""
     SELECT resource_id
-    FROM card_resources
+    FROM resources
     """)
     existing = g.cur.fetchall()
     resource_id = id_generator(size=8, existing=existing)
     
     # save the file into the resource directory
     ext = os.path.splitext(f.filename)[1]
-    dest = os.path.join(app.config['RESOURCE_DIRECTORY'], resource_id, ext)
+    dest = os.path.join(current_app.config['RESOURCE_DIRECTORY'], resource_id + ext)
     outfile = open(dest, mode="w")
     outfile.write(f.read())
     # add the resource to the resources table

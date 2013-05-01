@@ -58,10 +58,9 @@ def delete(cId):
 
     
 def get_resources(cId):
-    cur.execute("""
+    g.cur.execute("""
     SELECT resource_id, name, path, hash
-    FROM card_resouces
+    FROM resources
     WHERE cID=%s""", (cId))
-    vals = cur.fetchall()
+    vals = g.cur.fetchall()
     return vals
-
