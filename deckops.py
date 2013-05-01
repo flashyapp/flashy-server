@@ -97,7 +97,7 @@ def new_upload_image():
         # return the dividing points and the name of the page in json form
         return jsonify(
             name = name,
-            divs = divs
+            divs = divs,
             error  = 0)
     else:
         logging.debug("Image processing failed, invalid filetype?")
@@ -403,7 +403,7 @@ def deck_card_add_resource(deck_id):
 
     cId = card.get_cId(dId, index)
     rows, resource_id = resource.new(f, cId)
-    return jsonify(resource_id = resource_id, error = 0)
+    return jsonify(resource_id = resource_id
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
 def deck_card_delete_resource(deck_id):
