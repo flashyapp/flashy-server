@@ -35,7 +35,7 @@ def get_cId(dId, index):
     g.cur.execute("""
     SELECT id
     FROM cards
-    WHERE dId=%s AND card_id=%s""",
+    WHERE deck=%s AND card_id=%s""",
                   (dId, index))
     ret, = g.cur.fetchone()
     return ret
@@ -57,3 +57,11 @@ def delete(cId):
     
 
     
+def get_resources(cId):
+    cur.execute("""
+    SELECT resource_id, name, path, hash
+    FROM card_resouces
+    WHERE cID=%s""", (cId))
+    vals = cur.fetchall()
+    return vals
+
