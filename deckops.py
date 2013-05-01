@@ -403,7 +403,7 @@ def deck_card_add_resource(deck_id):
 
     cId = card.get_cId(dId, index)
     rows, resource_id = resource.new(f, cId)
-    return jsonify(resource_id = resource_id
+    return jsonify(resource_id = resource_id)
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
 def deck_card_delete_resource(deck_id):
