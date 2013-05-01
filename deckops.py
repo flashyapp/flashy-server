@@ -75,7 +75,7 @@ def new_upload_image():
         return jsonify({'error' : 500})
         
     username = request.form['username']
-    sId = requst.form['session_id']
+    sId = request.form['session_id']
     fil = request.files['file']
 
     
