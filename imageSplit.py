@@ -67,10 +67,10 @@ def splitImage(img, divLines):
     return ret
         
 if __name__ == "__main__":
-    img = Image.open("test.gif")
+    img = Image.open("test/test.gif")
     i = np.array(img)
     a = divLines(i)
     r = splitImage(img, a)
     from pprint import pprint
-    for c, out in enumerate(r):
-        out.convert("RGB").save("{0}.jpg".format(c))
+    # for c, out in enumerate(r):
+    #     out.convert("RGB").save("{0}.jpg".format(c))

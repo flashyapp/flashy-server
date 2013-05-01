@@ -193,7 +193,8 @@ def reset_password():
     user.modify(username, newpass)
     # send the user the update password
     send_reset_email(email, newpass)
-    
+
+    return jsonify({'error' : 0})    
 @userops.route('/login', methods = ['POST'])
 def user_login():
     log_request(request)

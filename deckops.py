@@ -380,8 +380,7 @@ def deck_card_get_resources(deck_id):
     cId = card.get_cId(dId, index)
     
     resources = card.get_resources(cId)
-    resources['error'] = 0
-    return resources
+    return jsonify(resources = resources, error = 0)
 
 @deckops.route('/<deck_id>/card/add_resource', methods=['POST'])
 def deck_card_add_resource(deck_id):
@@ -403,7 +402,8 @@ def deck_card_add_resource(deck_id):
         return jsonify({'error' : 300})
 
     cId = card.get_cId(dId, index)
-    resource.new(f, cId)
+    rows, resource_id = resource.new(f, cId)
+    return jsonify(resource_id = resource_id, error = 0)
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
 def deck_card_delete_resource(deck_id):
