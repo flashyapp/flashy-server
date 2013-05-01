@@ -41,8 +41,8 @@ def __subImage(img, box):
     return img[box[0]:box[2], box[1]: box[3]]
 
     
-def divLines(inImage):
-    img = np.array(inImage)
+def divLines(inputImage):
+    img = np.asarray(inputImage.convert('L'))
     ret = []
     vbands = []
     
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
-    # for c, out in enumerate(r):
-    #     out.convert("RGB").save("{0}.jpg".format(c))
+    for c, out in enumerate(r):
+        out.convert("RGB").save("{0}.jpg".format(c))
