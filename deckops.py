@@ -347,8 +347,6 @@ def deck_delete_card(deck_id):
         logging.debug("Deck does not exist")
         return jsonify({'error' : 300})
 
-    # check that the deck belongs to the user
-    uId = user.get
     dId = deck.get_id(deck_id)
     cId = card.get_cId(dId, index)
     ret = card.delete(cId)
