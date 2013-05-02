@@ -13,7 +13,7 @@ from PIL import Image
 def __midpoint(a, b):
     return (a[1] + b[0])/float(2)
     
-def __createBands(bins, minlen = 2):
+def __createBands(bins, minlen = 10):
     bands = []
     c     = 0
     start = 0
@@ -37,16 +37,34 @@ def __createBands(bins, minlen = 2):
         
     return bands
 
-def __subImage(img, box):
-    return img[box[0]:box[2], box[1]: box[3]]
-
+def __backmask(img):
+    height = len(img)
+    width = len(img[0])
     
+    hist, band_edges = np.histogram(img, bins=2)
+    mi = np.where(hist == max(hist))[0][0]
+    lower = band_edges[mi]
+    upper = band_edges[mi + 1]
+    
+    for i, row in enumerate(img):
+        for j, px in enumerate(row):
+            if lower < px < upper:
+                img[i][j] = 0
+            else:
+                img[i][j] = 255
+    
+    return img
+                
 def divLines(inputImage):
-    img = np.asarray(inputImage.convert('L'))
+    img = np.array(inputImage.convert('L'))
     ret = []
     vbands = []
     
-    masked = laplace(img)       # laplace backgrounding (dumb but works)
+    masked = __backmask(img)
+    # # DEBUG CODE
+    # maskedout = Image.fromarray(masked)
+    # maskedout.save("masked.jpg")
+    
     # row work
     hcounts = np.sum(masked, axis=1)
     hbands = __createBands(hcounts)
@@ -68,9 +86,9 @@ def splitImage(img, divLines):
     return ret
         
 if __name__ == "__main__":
-    img = Image.open("test/test.gif")
+    img = Image.open("testing.jpg")
     a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
-    for c, out in enumerate(r):
-        out.convert("RGB").save("{0}.jpg".format(c))
+    # for c, out in enumerate(r):
+    #     out.convert("RGB").save("{0}.jpg".format(c))
