@@ -147,8 +147,8 @@ def new_from_image():
         icard[1].save(btmp, format("JPEG"))
         atmp.seek(0)
         btmp.seek(0)
-        a_id = resource.new(atmp, cId)[1]
-        b_id = resource.new(atmp, cId)[1]
+        a_id = resource.new(atmp, id_generator(), cId)[1]
+        b_id = resource.new(atmp, id_generator(), cId)[1]
         sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
         sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
         card.modify(cId, sideA, sideB)
@@ -397,7 +397,7 @@ def deck_card_add_resource(deck_id):
         return jsonify({'error' : 300})
 
     cId = card.get_cId(dId, index)
-    rows, resource_id = resource.new(f, cId)
+    rows, resource_id = resource.new(f, f.filename cId)
     return jsonify(resource_id = resource_id)
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
