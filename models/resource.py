@@ -12,7 +12,7 @@ def exists(rId):
     r = g.cur.fetchone()
     return True if r == 1 else False
     
-def new(f,filename, cId):
+def new(f, filename, cId):
     # get existing resource ids & generate the id
     g.cur.execute("""
     SELECT resource_id
