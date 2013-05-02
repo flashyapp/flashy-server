@@ -121,7 +121,7 @@ def new_from_image():
 
     filename = data['name']
     
-    uId = get_uId(username)
+    uId = user.get_uId(username)
     
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
