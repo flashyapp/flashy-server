@@ -110,7 +110,7 @@ def new_from_image():
     log_request(request)
     data = request.json
 
-    if not valid_params(['username', 'deck_name', 'description', 'session_id', 'name'], data):
+    if not valid_params(['username', 'deck_name', 'description', 'session_id', 'name', 'divs'], data):
         logging.debug("Missing parameters")
         return jsonify({'error' : 500})
         
@@ -139,7 +139,7 @@ def new_from_image():
 
     # split the temp image
     i = Image.open(filename)
-    imgs = splitImage(i, (data['vlines'], data['hlines']))
+    imgs = splitImage(i, data['divs'])
     
     asides = imgs[:len(imgs)/2]
     bsides = imgs[len(imgs)/2:]
