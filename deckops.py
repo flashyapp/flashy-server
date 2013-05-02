@@ -132,11 +132,6 @@ def new_from_image():
     # create the new deck in the database
     dId, deck_id = deck.new(deckname, uId, desc)
 
-    # Create a directory to hold the deck images
-    # TODO: clean this up to use settings appropriately
-    dirname = os.path.join(os.path.dirname(__file__),"deck_images", str(dId))
-    os.mkdir(dirname)
-
     # split the temp image
     i = Image.open(filename)
     imgs = splitImage(i, data['divs'])
