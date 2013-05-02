@@ -16,7 +16,7 @@ from imageSplit import divLines, splitImage
 
 from settings import ALLOWED_IMAGE_EXTENSIONS
 
-from utils import log_request, valid_params
+from utils import log_request, valid_params, id_generator
 
 import logging
 
