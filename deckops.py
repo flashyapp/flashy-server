@@ -153,7 +153,8 @@ def new_from_image():
         sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
         card.modify(cId, sideA, sideB)
     os.unlink(data['name'])        # let the filesystem delete the temp file
-    return deck.get_json(dId)
+    d = deck.get_deck(dId);
+    return jsonify(['deck': d, 'error': 0])
 
 
 @deckops.route('/<deck_id>/modify', methods=['POST'])
