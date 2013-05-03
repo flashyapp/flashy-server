@@ -145,14 +145,14 @@ def new_from_image():
             atmp = StringIO()
             p[0].save(atmp, format="JPEG")
             atmp.seek(0)
-            a_id = resource.new(atmp, id_generator(), cId)[0]
+            a_id = resource.new(atmp, id_generator(), cId)[1]
             sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
 
             if p[1] != None:
                 btmp = StringIO()
                 p[1].save(btmp, format="JPEG")
                 btmp.seek(0)
-                b_id = resource.new(btmp, id_generator(), cId)[0]
+                b_id = resource.new(btmp, id_generator(), cId)[1]
                 sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
             else:
                 sideB = '[FLASHYRESOURCE:NO_SUCH_RESOURCE'
