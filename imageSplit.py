@@ -81,8 +81,10 @@ def splitImage(img, divLines):
     divLines.insert(0, (0, []))
     # Convert to list comprehension for speedup
     for prev_row, cur_row in zip(divLines[:-1], divLines[1:]):
+        cards = []
         for prev_col, cur_col in zip(cur_row[1][:-1], cur_row[1][1:]):
-            ret.append(img.crop((prev_col, prev_row[0], cur_col, cur_row[0])))
+            cards.append(img.crop((prev_col, prev_row[0], cur_col, cur_row[0])))
+        ret.append(cards)
     return ret
         
 if __name__ == "__main__":

@@ -135,23 +135,30 @@ def new_from_image():
     # split the temp image
     i = Image.open(filename)
     imgs = splitImage(i, data['divs'])
-    
-    asides = imgs[:len(imgs)/2]
-    bsides = imgs[len(imgs)/2:]
-    for icard in zip(asides, bsides):
-        cId = card.new(dId, "", "")
-        # write the image to memory "files"
-        atmp = StringIO()
-        btmp = StringIO()
-        icard[0].save(atmp, format("JPEG"))
-        icard[1].save(btmp, format("JPEG"))
-        atmp.seek(0)
-        btmp.seek(0)
-        a_id = resource.new(atmp, id_generator(), cId)[1]
-        b_id = resource.new(atmp, id_generator(), cId)[1]
-        sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
-        sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
-        card.modify(cId, sideA, sideB)
+
+    for row in imgs:
+        # pairwise collect the cards
+        img_pairs =  pairs(row)
+        for p in img_pairs:
+            cId = card.new(dId, "", "")
+            # String IO for file in memory
+            atmp = StringIO()
+            p[0].save(atmp, format="JPEG")
+            atmp.seek(0)
+            a_id = resource.new(atmp, id_generator(), cId)[0]
+            sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
+
+            if p[1] != None:
+                btmp = StringIO()
+                p[1].save(btmp, format="JPEG")
+                btmp.seek(0)
+                b_id = resource.new(btmp, id_generator(), cId)[0]
+                sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
+            else:
+                sideB = '[FLASHYRESOURCE:NO_SUCH_RESOURCE'
+                
+            card.modify(cId, sideA, sideB)
+
     os.unlink(data['name'])        # let the filesystem delete the temp file
     d = deck.get_deck(dId);
     return jsonify({'deck': d, 'error': 0})
