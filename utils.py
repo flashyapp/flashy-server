@@ -59,6 +59,10 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits, existing=
     assert False, "Infinite loop broke in {0}".format(__name__)
 
 def pairs(lst):
-    if len(lst) % == 1:
+    if len(lst) % 2 == 1:
         lst.append(None)
     return zip(lst[::2], lst[1::2])
+
+
+
+
