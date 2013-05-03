@@ -154,7 +154,7 @@ def new_from_image():
         card.modify(cId, sideA, sideB)
     os.unlink(data['name'])        # let the filesystem delete the temp file
     d = deck.get_deck(dId);
-    return jsonify(['deck': d, 'error': 0])
+    return jsonify({'deck': d, 'error': 0})
 
 
 @deckops.route('/<deck_id>/modify', methods=['POST'])
