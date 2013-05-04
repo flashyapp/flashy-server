@@ -18,7 +18,7 @@ def new(f, filename, cId):
     SELECT resource_id
     FROM resources
     """)
-    existing = g.cur.fetchall()
+    existing = ['00000000'] + g.cur.fetchall()
     resource_id = id_generator(size=8, existing=existing)
     
     # save the file into the resource directory

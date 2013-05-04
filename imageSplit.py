@@ -45,15 +45,9 @@ def __backmask(img):
     mi = np.where(hist == max(hist))[0][0]
     lower = band_edges[mi]
     upper = band_edges[mi + 1]
-    
-    for i, row in enumerate(img):
-        for j, px in enumerate(row):
-            if lower < px < upper:
-                img[i][j] = 0
-            else:
-                img[i][j] = 255
-    
-    return img
+
+    ret = np.where( (lower < img) & (img < upper), 0, 255)
+    return np.uint8(ret)
                 
 def divLines(inputImage):
     img = np.array(inputImage.convert('L'))
@@ -61,9 +55,6 @@ def divLines(inputImage):
     vbands = []
     
     masked = __backmask(img)
-    # # DEBUG CODE
-    # maskedout = Image.fromarray(masked)
-    # maskedout.save("masked.jpg")
     
     # row work
     hcounts = np.sum(masked, axis=1)

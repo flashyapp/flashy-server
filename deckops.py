@@ -155,7 +155,7 @@ def new_from_image():
                 b_id = resource.new(btmp, id_generator(), cId)[1]
                 sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
             else:
-                sideB = '[FLASHYRESOURCE:NO_SUCH_RESOURCE'
+                sideB = '[FLASHYRESOURCE:00000000]'
                 
             card.modify(cId, sideA, sideB)
 
@@ -424,5 +424,3 @@ def deck_card_delete_resource(deck_id):
     
     resource.delete(resource_id)
     return jsonify({'error' : 0})
-
-    
