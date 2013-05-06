@@ -87,7 +87,7 @@ def new_upload_image():
 
     if fil and allowed_file(fil.filename):
         # get the file extension
-        ext = os.path.splitext(fil.filename)
+        ext = os.path.splitext(fil.filename)[1]
         # create a temporary file
         f = tempfile.NamedTemporaryFile(delete=False, dir="/var/www/resources/tmp/", suffix=".{0}".format(ext))
         name = os.path.basename(f.name)
