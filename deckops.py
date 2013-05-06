@@ -86,9 +86,11 @@ def new_upload_image():
         return jsonify({'error' : 101})
 
     if fil and allowed_file(fil.filename):
+        # get the file extension
+        ext = os.path.splitext(fil.filename)
         # create a temporary file
-        f = tempfile.NamedTemporaryFile(delete=False)
-        name = f.name
+        f = tempfile.NamedTemporaryFile(delete=False, dir="/var/www/resources/tmp/", suffix=".{0}".format(ext))
+        name = os.path.basename(f.name)
         f.write(fil.read())
         f.close()
         # get the dividing points for the page
@@ -133,7 +135,7 @@ def new_from_image():
     dId, deck_id = deck.new(deckname, uId, desc)
 
     # split the temp image
-    i = Image.open(filename)
+    i = Image.open("/var/www/resources/tmp/{0}".format(filename))
     imgs = splitImage(i, data['divs'])
 
     for row in imgs:
