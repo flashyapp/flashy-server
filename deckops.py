@@ -90,6 +90,7 @@ def new_upload_image():
         ext = os.path.splitext(fil.filename)[1]
         # create a temporary file
         f = tempfile.NamedTemporaryFile(delete=False, dir="/var/www/resources/tmp/", suffix="{0}".format(ext))
+        os.chmod(f.name, 0644)
         name = os.path.basename(f.name)
         f.write(fil.read())
         f.close()
