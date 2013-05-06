@@ -161,7 +161,7 @@ def new_from_image():
                 
             card.modify(cId, sideA, sideB)
 
-    os.unlink(data['name'])        # let the filesystem delete the temp file
+    os.unlink("/var/www/resource/tmp/{0}".format(filename))        # let the filesystem delete the temp file
     d = deck.get_deck(dId);
     return jsonify({'deck': d, 'error': 0})
 
