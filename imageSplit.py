@@ -46,7 +46,7 @@ def __backmask(img):
     lower = band_edges[mi]
     upper = band_edges[mi + 1]
 
-    ret = np.where( (lower < img) & (img < upper), 0, 255)
+    ret = np.where( (lower < img) & (img <= upper), 0, 255)
     return np.uint8(ret)
                 
 def divLines(inputImage):
@@ -55,7 +55,8 @@ def divLines(inputImage):
     vbands = []
     
     masked = __backmask(img)
-    
+    # DEBUG
+    Image.fromarray(masked).save("masked.jpg")
     # row work
     hcounts = np.sum(masked, axis=1)
     hbands = __createBands(hcounts)
@@ -79,9 +80,13 @@ def splitImage(img, divLines):
     return ret
         
 if __name__ == "__main__":
-    img = Image.open("testing.jpg")
+    img = Image.open("test.gif")
     a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
-    # for c, out in enumerate(r):
-    #     out.convert("RGB").save("{0}.jpg".format(c))
+    for i, row in enumerate(r):
+        for j, img in enumerate(row):
+            img.convert("RGB").save("{0}-{1}.jpg".format(i,j))
+
+    
+
