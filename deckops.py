@@ -128,7 +128,7 @@ def new_from_image():
     if not user.verify(username, sId):
         return jsonify({'error' : 101})
         
-    if not filename or not os.path.exists(filename):
+    if not filename or not os.path.exists("/var/www/resources/tmp/{0}".format(filename)):
         return jsonify({'error' : 201})
         
     # create the new deck in the database
