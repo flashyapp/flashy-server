@@ -94,7 +94,7 @@ def new_upload_image():
         f.write(fil.read())
         f.close()
         # get the dividing points for the page
-        i = Image.open(name)
+        i = Image.open(f.name)
         divs = divLines(i)
         del i
         # return the dividing points and the name of the page in json form
