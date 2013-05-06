@@ -4,11 +4,11 @@ Created on Mar 24, 2013
 @author: beauzeaux
 '''
 import numpy as np
-from scipy.ndimage import laplace
+from scipy.ndimage.filters import gaussian_filter
 from scipy.misc import imsave
 
 from PIL import Image
-
+from ImageEnhance import Contrast
 
 def __midpoint(a, b):
     return (a[1] + b[0])/float(2)
@@ -50,14 +50,16 @@ def __backmask(img):
     return np.uint8(ret)
                 
 def divLines(inputImage):
-    img = np.array(inputImage.convert('L'))
+    width, height = inputImage.size
+    img = np.array(Contrast(inputImage.convert('L')).enhance(2))
+    # img = gaussian_filter(img, width / 100)
     ret = []
     vbands = []
     
     masked = __backmask(img)
-    # DEBUG
-    Image.fromarray(masked).save("masked.jpg")
-    # row work
+    masked = gaussian_filter(masked, width / 150)
+    
+    # Image.fromarray(masked).save("masked.jpg")
     hcounts = np.sum(masked, axis=1)
     hbands = __createBands(hcounts)
     vbands = [__createBands(np.sum(masked[hi[0] : hi[1], :], axis=0)) for hi in hbands]
@@ -80,7 +82,7 @@ def splitImage(img, divLines):
     return ret
         
 if __name__ == "__main__":
-    img = Image.open("test.gif")
+    img = Image.open("testing.png")
     a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
