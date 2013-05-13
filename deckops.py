@@ -166,7 +166,6 @@ def new_from_image():
     d = deck.get_deck(dId);
     return jsonify({'deck': d, 'error': 0})
 
-
 @deckops.route('/<deck_id>/modify', methods=['POST'])
 def deck_modify(deck_id):
     log_request(request)
@@ -218,7 +217,6 @@ def get_deck(deck_id):
     
     return jsonify(ret)
 
-@deckops.route('/<deck_id>/')
 @deckops.route('/<deck_id>/delete', methods=['POST'])
 def delete_deck(deck_id):
     log_request(request)
@@ -250,6 +248,64 @@ def delete_deck(deck_id):
     else:
         logging.debug("Failed to delete deck")
         return jsonify({'error' : 300})
+        
+@deckops.route('/<deck_id>/append_from_image', methods=['POST'])
+def new_from_image(deck_id):
+    log_request(request)
+    data = request.json
+
+    if not valid_params(['username', 'deck_id', 'description', 'session_id', 'name', 'divs'], data):
+        logging.debug("Missing parameters")
+        return jsonify({'error' : 500})
+        
+    username = data['username']
+    deckname = data['deck_name']
+    desc     = data['description']
+    sId      = data['session_id']
+
+    filename = data['name']
+    
+    uId = user.get_uId(username)
+    
+    if not user.verify(username, sId):
+        return jsonify({'error' : 101})
+        
+    if not filename or not os.path.exists("/var/www/resources/tmp/{0}".format(filename)):
+        return jsonify({'error' : 201})
+        
+    # create the new deck in the database
+    dId = deck.get_id(deck_id)
+
+    # split the temp image
+    i = Image.open("/var/www/resources/tmp/{0}".format(filename))
+    imgs = splitImage(i, data['divs'])
+
+    for row in imgs:
+        # pairwise collect the cards
+        img_pairs =  pairs(row)
+        for p in img_pairs:
+            cId = card.new(dId, "", "")
+            # String IO for file in memory
+            atmp = StringIO()
+            p[0].convert("RGB").save(atmp, format="JPEG")
+            atmp.seek(0)
+            a_id = resource.new(atmp, id_generator(), cId)[1]
+            sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
+
+            if p[1] != None:
+                btmp = StringIO()
+                p[1].convert("RGB").save(btmp, format="JPEG")
+                btmp.seek(0)
+                b_id = resource.new(btmp, id_generator(), cId)[1]
+                sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
+            else:
+                sideB = '[FLASHYRESOURCE:00000000]'
+                
+            card.modify(cId, sideA, sideB)
+
+    os.unlink("/var/www/resources/tmp/{0}".format(filename))        # let the filesystem delete the temp file
+    d = deck.get_deck(dId);
+    return jsonify({'deck': d, 'error': 0})
 
 @deckops.route('/get_decks', methods=['POST'])
 def deck_get_decks():
