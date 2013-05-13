@@ -146,14 +146,14 @@ def new_from_image():
             cId = card.new(dId, "", "")
             # String IO for file in memory
             atmp = StringIO()
-            p[0].save(atmp, format="JPEG")
+            p[0].convert("RGB").save(atmp, format="JPEG")
             atmp.seek(0)
             a_id = resource.new(atmp, id_generator(), cId)[1]
             sideA = '<img src="[FLASHYRESOURCE:{0}]" />'.format(a_id)
 
             if p[1] != None:
                 btmp = StringIO()
-                p[1].save(btmp, format="JPEG")
+                p[1].convert("RGB").save(btmp, format="JPEG")
                 btmp.seek(0)
                 b_id = resource.new(btmp, id_generator(), cId)[1]
                 sideB = '<img src="[FLASHYRESOURCE:{0}]" />'.format(b_id)
