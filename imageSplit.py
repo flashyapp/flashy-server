@@ -82,7 +82,8 @@ def splitImage(img, divLines):
     return ret
         
 if __name__ == "__main__":
-    img = Image.open("testing.png")
+    import sys
+    img = Image.open(sys.argv[1])
     a = divLines(img)
     r = splitImage(img, a)
     from pprint import pprint
