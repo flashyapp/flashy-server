@@ -195,7 +195,7 @@ def deck_modify(deck_id):
     return jsonify({'error': 0})
     
 @deckops.route('/<deck_id>/append_from_image', methods=['POST'])
-def new_from_image(deck_id):
+def append_from_image(deck_id):
     log_request(request)
     data = request.json
 
