@@ -49,7 +49,7 @@ from flask import Blueprint, request, session, g, redirect, url_for, abort, rend
 
 from models import user, tempuser
 import logging
-from utils import log_request, 
+from utils import log_request
 
 userops = Blueprint('userops', __name__)
 MAX_SESSIONS=10
