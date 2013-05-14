@@ -85,7 +85,7 @@ def send_confirm_email(addr, verifystring):
     <head></head>
     <body>
     This is a verification email for flashyapp, to complete your registration please visit the following link
-    <a href="http://flashyapp.com/api/user/verify/{0}">verify</a>
+    <a href="http://www.flashyapp.com/api/user/verify/{0}">verify</a>
 
     <br />
     <br />
@@ -95,7 +95,7 @@ def send_confirm_email(addr, verifystring):
     </html>
     """.format(verifystring)
     plaintext = """
-    Please visit http://flashyapp.com/api/user/verify/{0} to activate your account
+    Please visit http://www.flashyapp.com/api/user/verify/{0} to activate your account
     """.format(verifystring)
     send_email(addr, html, plaintext, "Flashy Registration")
 
