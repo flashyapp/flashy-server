@@ -23,10 +23,8 @@
 # SOFTWARE.
 
 __author__ = "Nick Beaulieu"
-__copyright__ = "Copyright 2013,
-Flashyapp"
-__credits__ = ["Nick Beaulieu", "Joe Turchiano", "Adam
-Yabroudi"]
+__copyright__ = "Copyright 2013, Flashyapp"
+__credits__ = ["Nick Beaulieu", "Joe Turchiano", "Adam Yabroudi"]
 __license__ = "MIT"
 __maintainer__ = "Nick Beaulieu"
 __email__ = "nsbeauli@princeton.edu"
