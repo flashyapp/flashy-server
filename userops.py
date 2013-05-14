@@ -183,14 +183,12 @@ def verify(vId):
     log_request(request)
     # verify the user and create a new user
 
-    redirect_to_index = redirect('/')
-    response = current_app.make_response(redirect_to_index)
-    
     if not tempuser.verify(vId):
         logging.debug("No such verification_id")
-        return response
+        return "invalid verification id"
+    
     logging.debug("user verified")
-    return response
+    return redirect('/')
         
             
 @userops.route('/modify', methods=['POST'])
