@@ -61,8 +61,8 @@ def new(f, filename, cId):
     # add the resource to the resources table
     g.cur.execute("""
     INSERT
-    INTO resources(cId, resource_id, name, path)
-    VALUES(%s, %s, %s, %s)""", (cId, resource_id, filename, dest))
+    INTO resources(cId, resource_id, name, path, hash)
+    VALUES(%s, %s, %s, %s)""", (cId, resource_id, filename, "http://www.flashyapp.com/resources/" + resource_id + ext, 0))
     g.db.commit()
     return (g.cur.lastrowid, resource_id)
 
