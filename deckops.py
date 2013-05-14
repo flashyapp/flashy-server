@@ -498,6 +498,7 @@ def deck_modify_card(deck_id):
     if ret == 1:
         return jsonify({'error' : 0})
     else:
+        logging.error("invalid return code from card.modify {0}".format(ret))
         return jsonify({'error' : 400}) # no idea why this would happen
 
 
