@@ -63,7 +63,6 @@ print "Log File: {0}".format(app.config['LOG_FILE'])
 logging.basicConfig(filename = app.config['LOG_FILE'], format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 # Blueprint imports
-from testops import testops
 from userops import userops
 from deckops import deckops
 
