@@ -92,8 +92,6 @@ def delete(cId):
     g.db.commit()
     return g.cur.rowcount
     
-
-    
 def get_resources(cId):
     """Get the list of resources associated with the card"""
     g.cur.execute("""
