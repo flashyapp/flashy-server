@@ -1,3 +1,33 @@
+# The MIT License (MIT)
+
+# Copyright (c) 2013 Flashy
+
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+__author__ = "Nick Beaulieu" __copyright__ = "Copyright 2013,
+Flashyapp" __credits__ = ["Nick Beaulieu", "Joe Turchiano", "Adam
+Yabroudi"] __license__ = "MIT" __maintainer__ = "Nick Beaulieu"
+__email__ = "nsbeauli@princeton.edu" __status__ = "Production"
+__date__ = "Mon May 13 19:50:55 EDT 2013" __version__ = "1.0"
+
 import MySQLdb
 import os
 import md5
@@ -27,6 +57,8 @@ deckops = Blueprint('deckops', __name__, static_folder='deck_images')
 ####################
 
 def allowed_file(filename):
+    """Is the file in the allowed image extensions
+    """
     return '.' in filename and \
 	  filename.rsplit('.', 1)[1] in ALLOWED_IMAGE_EXTENSIONS
 
@@ -37,6 +69,8 @@ def allowed_file(filename):
 
 @deckops.route('/new/from_lists', methods=['POST'])
 def new_from_cards():
+    """Create a new deck from a list of cards in the appropriate json format
+    """
     log_request(request)
     data = request.json
     
@@ -68,6 +102,8 @@ def new_from_cards():
 
 @deckops.route('/new/upload_image', methods=['POST'])
 def new_upload_image():
+    """Upload an image to the server and return a set of dividing lines
+    to the client"""
     log_request(request)
 
     if not valid_params(['username', 'session_id'], request.form) or\
@@ -110,6 +146,8 @@ def new_upload_image():
         
 @deckops.route('/new/from_image', methods=['POST'])
 def new_from_image():
+    """Create a new deck from an uploaded image
+    """
     log_request(request)
     data = request.json
 
@@ -169,6 +207,8 @@ def new_from_image():
 
 @deckops.route('/<deck_id>/modify', methods=['POST'])
 def deck_modify(deck_id):
+    """Modify a deck
+    """
     log_request(request)
     
     data = request.json
@@ -198,6 +238,8 @@ def deck_modify(deck_id):
     
 @deckops.route('/<deck_id>/get', methods=['POST'])
 def get_deck(deck_id):
+    """Get the deck in json format
+    """
     log_request(request)
 
     data = request.json
@@ -221,6 +263,8 @@ def get_deck(deck_id):
 @deckops.route('/<deck_id>/')
 @deckops.route('/<deck_id>/delete', methods=['POST'])
 def delete_deck(deck_id):
+    """Delete a deck
+    """
     log_request(request)
     
     data = request.json
@@ -253,6 +297,8 @@ def delete_deck(deck_id):
 
 @deckops.route('/get_decks', methods=['POST'])
 def deck_get_decks():
+    """Get the decks for a given user
+    """
     log_request(request)
 
     data = request.json
@@ -283,6 +329,8 @@ def deck_get_decks():
     
 @deckops.route('/<deck_id>/card/create', methods=['POST'])
 def deck_create_card(deck_id):
+    """Create a card and append it to the deck
+    """
     log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
@@ -306,6 +354,8 @@ def deck_create_card(deck_id):
 
 @deckops.route('/<deck_id>/card/modify', methods=['POST'])
 def deck_modify_card(deck_id):
+    """Modify an existing card
+    """
     log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
@@ -337,6 +387,8 @@ def deck_modify_card(deck_id):
 
 @deckops.route('/<deck_id>/card/delete', methods=['POST'])
 def deck_delete_card(deck_id):
+    """Delete an existing card
+    """
     log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
@@ -365,6 +417,8 @@ def deck_delete_card(deck_id):
 
 @deckops.route('/<deck_id>/card/get_resources', methods=['POST'])
 def deck_card_get_resources(deck_id):
+    """Get all the associated resources with a card
+    """
     log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
@@ -390,6 +444,8 @@ def deck_card_get_resources(deck_id):
 
 @deckops.route('/<deck_id>/card/add_resource', methods=['POST'])
 def deck_card_add_resource(deck_id):
+    """ Add a resource to associate with the card
+    """
     log_request(request)
     username = request.form['username']
     sId = request.form['session_id']
@@ -413,6 +469,8 @@ def deck_card_add_resource(deck_id):
 
 @deckops.route('/<deck_id>/card/delete_resource', methods=['POST'])
 def deck_card_delete_resource(deck_id):
+    """Delete a resource associated with a card
+    """
     log_request(request)
     username = request.json['username']
     sId = request.json['session_id']
