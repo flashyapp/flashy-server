@@ -1,3 +1,4 @@
+from __future__ import with_statement
 # The MIT License (MIT)
 
 # Copyright (c) 2013 Flashy
@@ -31,7 +32,6 @@ __date__ = "Mon May 13 19:50:55 EDT 2013"
 __version__ = "1.0"
 
 # imports
-from __future__ import with_statement
 from contextlib import closing
 
 import MySQLdb
