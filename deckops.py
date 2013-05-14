@@ -22,11 +22,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__author__ = "Nick Beaulieu" __copyright__ = "Copyright 2013,
-Flashyapp" __credits__ = ["Nick Beaulieu", "Joe Turchiano", "Adam
-Yabroudi"] __license__ = "MIT" __maintainer__ = "Nick Beaulieu"
-__email__ = "nsbeauli@princeton.edu" __status__ = "Production"
-__date__ = "Mon May 13 19:50:55 EDT 2013" __version__ = "1.0"
+__author__ = "Nick Beaulieu"
+__copyright__ = "Copyright 2013,
+Flashyapp"
+__credits__ = ["Nick Beaulieu", "Joe Turchiano", "Adam
+Yabroudi"]
+__license__ = "MIT"
+__maintainer__ = "Nick Beaulieu"
+__email__ = "nsbeauli@princeton.edu"
+__status__ = "Production"
+__date__ = "Mon May 13 19:50:55 EDT 2013"
+__version__ = "1.0"
 
 import MySQLdb
 import os
