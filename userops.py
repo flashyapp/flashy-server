@@ -154,12 +154,14 @@ def create_user():
     # Check if the username is in use
     if user.exists_name(username) or tempuser.exists_name(username):
         ret['username_s'] = 0
+        ret['error'] = 1
         logging.debug("User already exists")
         error = True
 
     # Check if the email is already in use
     if user.exists_email(email) or tempuser.exists_email(email):
         ret['email_s'] = 0
+        ret['error'] = 3
         logging.debug("Email already in use")
         error = True
 
@@ -168,14 +170,14 @@ def create_user():
 
     if error:
         return jsonify(ret)
-
+    
+    ret['error'] = 0
     # Everything was successful add the user to tempusers and send an email to the enduser
     vId = tempuser.new(username, email, password)
     logging.debug("Succesfully added new temp user")
     send_confirm_email(email, vId)
     return jsonify(ret)
-    
-    
+        
 @userops.route('/verify/<vId>', methods=['GET'])
 def verify(vId):
     log_request(request)
