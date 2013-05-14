@@ -67,7 +67,7 @@ from userops import userops
 from deckops import deckops
 
 # Blueprints for the various parts of the application
-app.register_blueprint(testops)
+
 # app.register_blueprint(pageops, url_prefix='/page') not used any longer
 app.register_blueprint(userops, url_prefix='/user')
 app.register_blueprint(deckops, url_prefix='/deck')
